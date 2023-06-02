@@ -5,59 +5,111 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import processing.core.PApplet;
+import sprites.Ground;
+import sprites.Mario;
 
 public class DrawingSurface extends PApplet{
 	
-	private Game game;
 	private Level1_1 level1_1;
 	private HashMap<String, Integer> keysPressed; //NEW CODE
+	private ArrayList<Ground> ground;
+	private ArrayList<Integer[]> groundCombos;
+	
+	private Mario mario;
+	private double groundLevel; //NEW CODE
+	private boolean scrolling;
 	
 	//INITIALIZE ALL VARIABLES
 	public DrawingSurface() {
-		game = new Game(0,0,500,300);
 		level1_1 = new Level1_1(0,0,1000,300);
 		keysPressed = new HashMap<String, Integer>();
+		
+		this.groundLevel = level1_1.height - 50;
+		this.scrolling = false;
+		
+		ground = level1_1.getGround();
+		groundCombos = level1_1.getCombos();
+		mario = new Mario(0,(float)(groundLevel - 75),50,75,"sprites/Mario/mario-right.png");
 	}
 	
 	//FRAMES
 	public void setup() {
 		frameRate(30);
 	}
-	
+	public void mario() {
+		if(mario.getx() <= 450 && mario.getx() >= 0) {
+			if(mario.isRunning()) {
+				mario.runningAnim();
+				if(mario.getDirection() == 1 && !scrolling)
+					mario.setx(mario.getx()+10);
+				else if(mario.getDirection() == 2 && !scrolling)
+					mario.setx(mario.getx()-10);
+			}
+			else if(mario.isWalking()) {
+				mario.walkingAnim();
+				if(mario.getDirection() == 1 && !scrolling)
+					mario.setx(mario.getx()+2);
+				else if(mario.getDirection() == 2 && !scrolling)
+					mario.setx(mario.getx()-2);
+			}	
+		}
+		else if(mario.getx() > 450) mario.setx(449);
+		else if(mario.getx() < 0) mario.setx(1);
+		
+		for(Integer[] g: groundCombos) {
+			if(mario.isOnPlatform(g[0],g[1],g[2])) {
+				groundLevel = g[2];
+//				System.out.println("Ground: " + groundLevel);
+			}
+			else {
+				if(mario.isOnPipe(level1_1.getPipe())) {
+					level1_1.setLevelStat(true);
+					mario.setGround(level1_1.getPipe().gety());
+					mario.pipeAnim();
+				}
+				else if (!level1_1.getLevelStat()){
+					mario.setGround((float)(level1_1.height - 50));
+					groundLevel = mario.getGround();
+				}	
+			}
+			mario.bounceOffTop(g[0], g[1], g[2]);
+		}
+		
+		mario.moveY();
+		mario.draw(this);
+	}
 	public void update() {
 //		System.out.print("Running?: " + game.getMario().isRunning());
 //		System.out.print(" Walking?: " + game.getMario().isWalking());
-		
+
 		if(keysPressed.containsKey("Right")) {
 			if(keysPressed.containsKey("Shift")){
-				game.getMario().setRunning(true);
-				game.setScrolling( level1_1.scroll(game.getMario().getx(), 10) ) ;
+				mario.setRunning(true);
+				setScrolling( level1_1.scroll(mario.getx(), 10) ) ;
 			}
 			else {
-				game.getMario().setWalking(true);
-				game.setScrolling( level1_1.scroll(game.getMario().getx(), 5) ) ;
+				mario.setWalking(true);
+				setScrolling( level1_1.scroll(mario.getx(), 5) ) ;
 			}
 		}
 		if(keysPressed.containsKey("Left")) {
 			
 			if(keysPressed.containsKey("Shift")){
-				game.getMario().setRunning(true);
-				game.setScrolling( level1_1.scroll(game.getMario().getx(), -10) ) ;
+				mario.setRunning(true);
+				setScrolling( level1_1.scroll(mario.getx(), -10) ) ;
 			}
 			else {
-				game.getMario().setWalking(true);
-				game.setScrolling( level1_1.scroll(game.getMario().getx(), -5) ) ;
+				mario.setWalking(true);
+				setScrolling( level1_1.scroll(mario.getx(), -5) ) ;
 			}
 		}
-
-		
 	}
 
 	//DRAW ALL COMPONENTS HERE
 	public void draw() {
 		level1_1.draw(this);
 		update();
-		game.draw(this);
+		mario();
 	}
 	
 	//USER INTERACTION: NEW CODE
@@ -71,12 +123,12 @@ public class DrawingSurface extends PApplet{
 		}
 		if(keyCode == KeyEvent.VK_RIGHT) {
 			keysPressed.put("Right", 1);
-			game.getMario().setDirection(1);
+			mario.setDirection(1);
 			level1_1.setScrollDir(1);	
 		}
 		if(keyCode == KeyEvent.VK_LEFT) {
 			keysPressed.put("Left", 1);
-			game.getMario().setDirection(2);
+			mario.setDirection(2);
 			level1_1.setScrollDir(2);	
 		}	
 	}
@@ -84,23 +136,27 @@ public class DrawingSurface extends PApplet{
 	public void keyReleased() {
 		if(keyCode == KeyEvent.VK_RIGHT) {
 			keysPressed.remove("Right", 1);
-			game.getMario().setWalking(false);
-			game.getMario().endAnim();
+			mario.setWalking(false);
+			mario.endAnim();
 		}
 		if(keyCode == KeyEvent.VK_LEFT) {
 			keysPressed.remove("Left", 1);
-			game.getMario().setWalking(false);
-			game.getMario().endAnim();
+			mario.setWalking(false);
+			mario.endAnim();
 		}
 		if(keyCode == KeyEvent.VK_SHIFT) {
 			keysPressed.remove("Shift", 1);
-			game.getMario().setRunning(false);
-			game.getMario().endAnim();
+			mario.setRunning(false);
+			mario.endAnim();
 		}
 		if(keyCode == KeyEvent.VK_SPACE) {
-			game.getMario().jump(15);
+			mario.jump(20);
 			keysPressed.remove("Space", 1);
 		}
 		
+	}
+	
+	public void setScrolling(boolean scroll) {
+		scrolling = scroll;
 	}
 }

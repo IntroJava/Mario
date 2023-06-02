@@ -7,6 +7,8 @@ public class Mario extends Sprite{
 	private String[] walkFramesR, runFramesR, walkFramesL, runFramesL;
 	private static final int GRAVITY_CONSTANT = 2;
 	private float yVelocity;
+	private int numJumps;
+	private boolean gameEnd;
 	
 	public Mario(float x, float y, double width, double height, String img) {
 		super(x, y, width, height, img);
@@ -30,10 +32,14 @@ public class Mario extends Sprite{
 				"sprites/Mario/mario-runL6.png"};
 		this.runR = new Animation((Sprite)this, runFramesR, "sprites/Mario/mario-right.png");
 		this.runL = new Animation((Sprite)this, runFramesL, "sprites/Mario/mario-left.png");
+		this.gameEnd = false;
+		this.numJumps = 0;
 	}
 	
 	public void jump(int velocity) {
-		this.yVelocity += velocity;
+		numJumps++;
+		if(numJumps <= 2)
+			this.yVelocity += velocity;
 	}
 	
 	public void moveY() { //constantly running
@@ -41,18 +47,30 @@ public class Mario extends Sprite{
 			this.sety(this.gety() - yVelocity);
 			gravity();
 		}
-
 	}
-	
 	private void gravity() {
 		if(this.gety() + this.getheight() <= this.getGround()) //if on or above ground
 			yVelocity -= GRAVITY_CONSTANT;
 		else if(this.gety() + this.getheight() > this.getGround()) {
 			this.sety((float)(this.getGround() - this.getheight()));
+			numJumps = 0;
 			yVelocity = 0;
 		}
-		
 	}
+	
+	public boolean bounceOffTop(int startx, int endx, int y) {
+		float mid = (float)(this.getx() + this.getwidth()/2);
+
+		if((mid >= startx) && mid <= endx) {
+			if(this.gety() >= y + 40  && this.gety() <= y + 60) {
+				yVelocity = Math.abs(yVelocity)*-1;
+				return true;
+			}
+		}	
+		return false;
+
+	}
+	
 	public boolean isWalking() {
 		return walking;
 	}
@@ -66,6 +84,8 @@ public class Mario extends Sprite{
 		running = move;
 	}
 
+	
+	//ANIMATION METHODS
 	public void walkingAnim() {
 		if(this.getDirection() == 1) {
 			walkR.nextFrame();
@@ -95,5 +115,24 @@ public class Mario extends Sprite{
 		}
 	}
 	
+	public void pipeAnim() {
+		this.jump(5);
+		this.setimg("sprites/Mario/mario-hoorah.png");
+	}
+	
+	//INTERSECTION METHODS
+	public boolean isOnPipe(Pipe p) {
+		float bottom = (float)(this.gety() + this.getwidth());	
+		if(this.getx() + this.getwidth()/2 >= p.getx() && this.getx() + this.getwidth()/2 <= p.getx() + p.getwidth()) {
+			if(bottom >= p.gety() - 10 && bottom <= p.gety() + 10) {
+				return true;	
+			}
+		}		
+			return false;
+	}
+	
+	public void stopAll() {
+		gameEnd = true;
+	}
 
 }

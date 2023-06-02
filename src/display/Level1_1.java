@@ -3,13 +3,17 @@ import java.util.ArrayList;
 
 import processing.core.PApplet;
 import sprites.Ground;
+import sprites.Pipe;
 
 public class Level1_1 {
 
 	double x,y,width,height;
 	private ArrayList<Ground> ground;
+	private ArrayList<Integer[]> groundCombos; //startx,endx,y
 	private double groundLevel; //NEW CODE
 	private int relSpace, direction;
+	private Pipe pipe; 
+	private boolean levelComplete;
 	
 	public Level1_1(double x, double y, double width, double height) {
 		this.x = x;
@@ -19,14 +23,18 @@ public class Level1_1 {
 		this.groundLevel = height - 50;
 		this.relSpace = 500; //edge of the camera, starting
 		this.direction = 1;
+		this.groundCombos = new ArrayList<Integer[]>();  //startx,endx,y	
+		this.ground = new ArrayList<Ground>();
+		this.pipe = new Pipe(940,170,70,80,"sprites/pipe.png");
+		this.levelComplete = false;
 		
-		ground = new ArrayList<Ground>();
-		
-		for(int i= 0; i<20; i++) {
-			ground.add(new Ground(i*50, 250, 50,50,"sprites/ground.png"));
-		}
-		for(int j=0; j<3; j++) {
-			ground.add(new Ground(j*50 + 400, 120, 50, 50, "sprites/ground.png"));
+		groundCombos.add(new Integer[]{0,950,250});
+		groundCombos.add(new Integer[]{400,600,100});
+
+		for(Integer[] combo: groundCombos) {
+			for(int a= combo[0]; a< combo[1]; a+=50) {
+				ground.add(new Ground(a,combo[2],50,50,"sprites/ground.png"));
+			}
 		}
 	}
 	
@@ -38,19 +46,23 @@ public class Level1_1 {
 				for(Ground g: ground) {
 					g.setx(g.getx() - scrollSpeed);
 				}
+				for(Integer[] combo: groundCombos) {
+					combo[0] -= scrollSpeed;
+					combo[1] -= scrollSpeed;
+				}
+				pipe.setx(pipe.getx() - scrollSpeed);
 				return true;
 			}
 		}
-		return false;
-		
+		return false;	
 	}
 	
 	public void draw(PApplet papp){
 		papp.background(38,181,234);
-	
 		for(Ground g: ground) {
 			g.draw(papp);
 		}
+		pipe.draw(papp);
 
 	}
 	
@@ -58,4 +70,19 @@ public class Level1_1 {
 		this.direction = direction;
 	}
 	
+	public ArrayList<Ground> getGround(){
+		return ground;
+	}
+	public ArrayList<Integer[]> getCombos(){
+		return groundCombos;
+	}
+	public Pipe getPipe() {
+		return pipe;
+	}
+	public boolean getLevelStat() {
+		return levelComplete;
+	}
+	public void setLevelStat(boolean b) {
+		levelComplete = b;
+	}
 }

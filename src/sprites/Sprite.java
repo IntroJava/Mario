@@ -33,23 +33,33 @@ public class Sprite {
 		
 	}
 
-	public boolean isOnPlatform(float x1, float y1, int length) {
-		float spriteBottom = (float)(this.y + this.height);
-		if(this.x + this.width >= x1 && this.x + this.width <= x1 + length) {
-			if(spriteBottom <= y1) {
-				return true;
-			}
+	public boolean isOnPlatform(int startx, int endx, int y) {
+		float bottom = (float)(this.y + this.height);
+		float fallEdge = 0;
+		float landEdge = 0;
+		if(this.getDirection() == 1) {
+			fallEdge = this.getx() + 10;
+			landEdge = (float)(this.getx() + this.getwidth());		
+			if((landEdge >= startx) && fallEdge <= endx) {
+				if(bottom >= y - 5 && bottom <= y + 10) {
+					groundLevel = y;
+					return true;
+				}
+			}	
 		}
-
-		if(this.x >= x1 && this.x <= x1 + length) {
-			if(spriteBottom <= y1) {
-				return true;
-			}
+		else if(this.getDirection() == 2) {
+			fallEdge = this.getx() + 40;
+			landEdge = this.getx();
+			if((landEdge <= endx) && fallEdge >= startx) {
+				if(bottom >= y - 5 && bottom <= y + 10) {
+					groundLevel = y;
+					return true;
+				}
+			}	
 		}
-	
-
 		return false;
 	}
+	
 	
 	// GET METHODS
 	public String getImage() {
