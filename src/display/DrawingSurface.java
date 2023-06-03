@@ -19,17 +19,23 @@ public class DrawingSurface extends PApplet{
 	private double groundLevel; //NEW CODE
 	private boolean scrolling;
 	
+	private Thread level, mar;
+	
 	//INITIALIZE ALL VARIABLES
 	public DrawingSurface() {
 		level1_1 = new Level1_1(0,0,1000,300);
 		keysPressed = new HashMap<String, Integer>();
-		
+		level = new Thread(level1_1);
 		this.groundLevel = level1_1.height - 50;
 		this.scrolling = false;
 		
 		ground = level1_1.getGround();
 		groundCombos = level1_1.getCombos();
 		mario = new Mario(0,(float)(groundLevel - 75),50,75,"sprites/Mario/mario-right.png");
+		mar = new Thread(mario);
+		
+		level.start();
+		mar.start();
 	}
 	
 	//FRAMES
@@ -62,10 +68,18 @@ public class DrawingSurface extends PApplet{
 //				System.out.println("Ground: " + groundLevel);
 			}
 			else {
-				if(mario.isOnPipe(level1_1.getPipe())) {
-					level1_1.setLevelStat(true);
+				if(mario.isOnPipe(level1_1.getPipe()) && !level1_1.getLevelStat()) {
 					mario.setGround(level1_1.getPipe().gety());
-					mario.pipeAnim();
+					level1_1.setLevelStat(true);
+
+					try {
+						mar.sleep(250);	
+					} catch (InterruptedException e) {
+						System.out.println("Err: could not sleep");
+						e.printStackTrace();
+					}
+					mario.endjump(15);
+					mario.pipeAnim();	
 				}
 				else if (!level1_1.getLevelStat()){
 					mario.setGround((float)(level1_1.height - 50));

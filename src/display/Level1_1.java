@@ -5,7 +5,7 @@ import processing.core.PApplet;
 import sprites.Ground;
 import sprites.Pipe;
 
-public class Level1_1 {
+public class Level1_1 implements Runnable{
 
 	double x,y,width,height;
 	private ArrayList<Ground> ground;
@@ -63,7 +63,6 @@ public class Level1_1 {
 			g.draw(papp);
 		}
 		pipe.draw(papp);
-
 	}
 	
 	public void setScrollDir(int direction) {
@@ -84,5 +83,12 @@ public class Level1_1 {
 	}
 	public void setLevelStat(boolean b) {
 		levelComplete = b;
+	}
+
+	@Override
+	public void run() {
+		System.out.println("Level 1_1 is running...");
+		// TODO Auto-generated method stub
+		
 	}
 }

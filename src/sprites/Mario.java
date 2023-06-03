@@ -1,6 +1,6 @@
 package sprites;
 
-public class Mario extends Sprite{
+public class Mario extends Sprite implements Runnable{
 
 	private boolean walking, running; 
 	private Animation walkR, runR, walkL, runL;
@@ -8,7 +8,6 @@ public class Mario extends Sprite{
 	private static final int GRAVITY_CONSTANT = 2;
 	private float yVelocity;
 	private int numJumps;
-	private boolean gameEnd;
 	
 	public Mario(float x, float y, double width, double height, String img) {
 		super(x, y, width, height, img);
@@ -32,13 +31,16 @@ public class Mario extends Sprite{
 				"sprites/Mario/mario-runL6.png"};
 		this.runR = new Animation((Sprite)this, runFramesR, "sprites/Mario/mario-right.png");
 		this.runL = new Animation((Sprite)this, runFramesL, "sprites/Mario/mario-left.png");
-		this.gameEnd = false;
 		this.numJumps = 0;
 	}
 	
 	public void jump(int velocity) {
 		numJumps++;
 		if(numJumps <= 2)
+			this.yVelocity += velocity;
+	}
+	public void endjump(int velocity) {
+		
 			this.yVelocity += velocity;
 	}
 	
@@ -116,7 +118,7 @@ public class Mario extends Sprite{
 	}
 	
 	public void pipeAnim() {
-		this.jump(5);
+		this.setGround(400);
 		this.setimg("sprites/Mario/mario-hoorah.png");
 	}
 	
@@ -131,8 +133,24 @@ public class Mario extends Sprite{
 			return false;
 	}
 	
-	public void stopAll() {
-		gameEnd = true;
+	public boolean isOnGoomba(Goomba g) {
+		float bottom = (float)(this.gety() + this.getwidth());	
+		if(this.getx() >= g.getx() && this.getx() + this.getwidth()/2 <= p.getx() + p.getwidth()) {
+			if(bottom >= g.gety() - 10 && bottom <= g.gety() + 10) {
+				return true;	
+			}
+		}		
+			return false;
+	}
+
+	@Override
+	public void run() {
+		System.out.println("Mario is running...");
+		// TODO Auto-generated method stub
+		
+	}
+	public float getYVelocity() {
+		return this.yVelocity;
 	}
 
 }
